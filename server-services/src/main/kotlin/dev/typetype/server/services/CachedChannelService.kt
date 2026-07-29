@@ -16,7 +16,7 @@ class CachedChannelService(
             area = "channel",
             key = PublicCacheKey.of("channel", url, nextpage, sort),
             serializer = ChannelResponse.serializer(),
-            ttlSeconds = { PublicCachePolicy.channelTtl(url, nextpage, sort) },
+            ttlSeconds = { PublicCachePolicy.channelTtl(url, nextpage, sort).withJitter() },
         ) { delegate.getChannel(url, nextpage, sort) }
 
     override suspend fun getPlaylists(url: String, nextpage: String?): ExtractionResult<ChannelPlaylistsResponse> =
@@ -25,6 +25,6 @@ class CachedChannelService(
             area = "channel-playlists",
             key = PublicCacheKey.of("channel-playlists", url, nextpage),
             serializer = ChannelPlaylistsResponse.serializer(),
-            ttlSeconds = { PublicCachePolicy.channelTtl(url, nextpage, null) },
+            ttlSeconds = { PublicCachePolicy.channelTtl(url, nextpage, null).withJitter() },
         ) { delegate.getPlaylists(url, nextpage) }
 }

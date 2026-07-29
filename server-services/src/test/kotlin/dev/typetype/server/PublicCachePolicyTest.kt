@@ -4,6 +4,7 @@ import dev.typetype.server.services.BILIBILI_SERVICE_ID
 import dev.typetype.server.services.PublicCacheKey
 import dev.typetype.server.services.PublicCachePolicy
 import dev.typetype.server.services.YOUTUBE_SERVICE_ID
+import dev.typetype.server.services.withJitter
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -33,7 +34,7 @@ class PublicCachePolicyTest {
 
     @Test
     fun `channel ttl is shorter for channel search and volatile sorts`() {
-        assertEquals(3_600L, PublicCachePolicy.channelTtl("https://www.youtube.com/channel/id", null, null))
+        assertEquals(300L, PublicCachePolicy.channelTtl("https://www.youtube.com/channel/id", null, null))
         assertEquals(
             600L,
             PublicCachePolicy.channelTtl("https://www.youtube.com/channel/id/search?query=x", null, null),
@@ -53,5 +54,14 @@ class PublicCachePolicyTest {
         assertEquals(180L, PublicCachePolicy.commentsTtl("https://youtube.com/watch?v=id", null))
         assertEquals(600L, PublicCachePolicy.commentsTtl("https://youtube.com/watch?v=id", "cursor"))
         assertEquals(300L, PublicCachePolicy.commentsTtl("https://www.bilibili.com/video/id", null))
+    }
+
+    @Test
+    fun `channel ttl jitter stays within thirty percent of base ttl`() {
+        val base = 300L
+        val results = (1..1000).map { base.withJitter() }
+        assertTrue(results.all { it >= (base * 0.7).toLong() }, "value below 70% of $base")
+        assertTrue(results.all { it <= (base * 1.3).toLong() }, "value above 130% of $base")
+        assertTrue(results.toSet().size > 1, "jitter produced no variation")
     }
 }
