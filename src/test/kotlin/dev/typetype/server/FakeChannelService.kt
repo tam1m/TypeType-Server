@@ -6,8 +6,11 @@ import dev.typetype.server.models.ExtractionResult
 import dev.typetype.server.models.VideoItem
 import dev.typetype.server.services.ChannelService
 
-class FakeChannelService : ChannelService {
+class FakeChannelService(
+    private val failUrls: Set<String> = emptySet(),
+) : ChannelService {
     override suspend fun getChannel(url: String, nextpage: String?, sort: String?): ExtractionResult<ChannelResponse> {
+        if (url in failUrls) return ExtractionResult.Failure("Simulated failure for $url")
         val video = VideoItem(
             id = "id-${url.hashCode()}",
             title = "video",

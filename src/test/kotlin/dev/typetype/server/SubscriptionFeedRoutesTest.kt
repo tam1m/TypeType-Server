@@ -183,7 +183,7 @@ class SubscriptionFeedRoutesTest {
     }
 
     @Test
-    fun `partial refresh keeps the previous complete snapshot`() = withApp {
+    fun `partial refresh publishes working channels' videos`() = withApp {
         subscriptionsService.add(TEST_USER_ID, subscription(1))
         subscriptionsService.add(TEST_USER_ID, subscription(2))
         var rebuilding = false
@@ -198,9 +198,8 @@ class SubscriptionFeedRoutesTest {
         feedService.invalidate(TEST_USER_ID)
         feedService.awaitRefresh(TEST_USER_ID)
         val retained = Json.decodeFromString<SubscriptionFeedResponse>(requestFeed().bodyAsText())
-        assertEquals(original.generation, retained.generation)
-        assertEquals(setOf(1000L, 2000L), retained.videos.map { it.uploaded }.toSet())
-        assertFalse(retained.videos.any { it.uploaded == 9000L })
+        assertTrue(retained.generation!! > original.generation!!)
+        assertEquals(setOf(9000L), retained.videos.map { it.uploaded }.toSet())
     }
 
     @Test

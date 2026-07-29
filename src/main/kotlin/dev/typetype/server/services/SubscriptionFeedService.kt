@@ -122,13 +122,19 @@ class SubscriptionFeedService(
         val subscriptions = subscriptionsService.getAll(userId)
         val result = builder.build(subscriptions)
         if (store.invalidationToken(userId) != invalidation) return true
-        val valid = result.failedSources == 0 || previous == null && result.successfulSources > 0 || subscriptions.isEmpty()
+        val valid = result.successfulSources > 0 || subscriptions.isEmpty()
         if (!valid) {
             logger.warn(
-                "subscription_feed event=refresh_kept_previous user={} durationMs={} failedSources={}",
+                "subscription_feed event=refresh_all_sources_failed user={} durationMs={} failedSources={}",
                 userKey(userId), clock() - startedAt, result.failedSources,
             )
             return false
+        }
+        if (result.failedSources > 0) {
+            logger.info(
+                "subscription_feed event=refresh_partial user={} failedSources={} successfulSources={}",
+                userKey(userId), result.failedSources, result.successfulSources,
+            )
         }
         val refreshedAt = clock()
         val ordering = orderer.order(result.videos, previous, refreshedAt)
