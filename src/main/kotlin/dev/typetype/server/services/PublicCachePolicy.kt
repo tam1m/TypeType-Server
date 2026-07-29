@@ -28,7 +28,7 @@ internal object PublicCachePolicy {
         nextpage != null -> 1_800L
         url.contains("/shorts", ignoreCase = true) -> 900L
         sort.equals("latest", ignoreCase = true) -> 900L
-        else -> 3_600L
+        else -> 300L
     }
 
     fun commentsTtl(url: String, nextpage: String?): Long {
@@ -40,6 +40,11 @@ internal object PublicCachePolicy {
     }
 
     fun playlistTtl(nextpage: String?): Long = if (nextpage == null) 3_600L else 1_800L
+}
+
+internal fun Long.withJitter(factor: Double = 0.3): Long {
+    val jitter = (this * factor * (kotlin.random.Random.nextDouble() * 2 - 1)).toLong()
+    return this + jitter
 }
 
 private fun String.serviceHint(): Int? = when {
