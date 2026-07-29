@@ -27,10 +27,14 @@ internal class SubscriptionFeedBuilder(private val channelService: ChannelServic
             }
         }.map { it.await() }
         val videos = outcomes.flatMap { it.videos }.deduplicated()
+        val failedUrls = subscriptions.zip(outcomes)
+            .filter { (_, outcome) -> outcome.failedSources > 0 }
+            .map { (sub, _) -> sub.channelUrl }
         SubscriptionFeedBuildResult(
             videos = videos,
             successfulSources = outcomes.sumOf { it.successfulSources },
             failedSources = outcomes.sumOf { it.failedSources },
+            failedSubscriptionUrls = failedUrls,
         )
     }
 
@@ -100,4 +104,5 @@ internal data class SubscriptionFeedBuildResult(
     val videos: List<VideoItem>,
     val successfulSources: Int,
     val failedSources: Int,
+    val failedSubscriptionUrls: List<String>,
 )

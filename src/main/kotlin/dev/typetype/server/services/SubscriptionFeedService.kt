@@ -132,8 +132,8 @@ class SubscriptionFeedService(
         }
         if (result.failedSources > 0) {
             logger.info(
-                "subscription_feed event=refresh_partial user={} failedSources={} successfulSources={}",
-                userKey(userId), result.failedSources, result.successfulSources,
+                "subscription_feed event=refresh_partial user={} failedSources={} successfulSources={} failedUrls={}",
+                userKey(userId), result.failedSources, result.successfulSources, result.failedSubscriptionUrls,
             )
         }
         val refreshedAt = clock()
